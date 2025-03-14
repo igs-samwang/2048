@@ -1,0 +1,241 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #faf8ef;
+    color: #776e65;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    padding-top: 20px;
+}
+
+.container {
+    width: 500px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 80px;
+    margin: 0;
+    display: block;
+    float: left;
+}
+
+.score-container, .best-score-container {
+    position: relative;
+    float: right;
+    background: #bbada0;
+    padding: 15px 25px;
+    font-size: 25px;
+    height: 25px;
+    line-height: 47px;
+    font-weight: bold;
+    border-radius: 3px;
+    color: white;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.best-score-container {
+    margin-right: 10px;
+}
+
+.score-title {
+    font-size: 13px;
+    line-height: 13px;
+    position: absolute;
+    top: 4px;
+    left: 0;
+    right: 0;
+    text-transform: uppercase;
+}
+
+.game-container {
+    clear: both;
+    margin-top: 90px;
+    position: relative;
+    background: #bbada0;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.grid-container {
+    width: 470px;
+    height: 470px;
+    position: relative;
+    background: #bbada0;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.grid-cell {
+    width: 100px;
+    height: 100px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    float: left;
+    border-radius: 3px;
+    background: rgba(238, 228, 218, 0.35);
+}
+
+.tile {
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    font-size: 55px;
+    font-weight: bold;
+    text-align: center;
+    position: absolute;
+    border-radius: 3px;
+    z-index: 10;
+    transition: transform 0.15s ease-in-out, top 0.15s ease-in-out, left 0.15s ease-in-out;
+}
+
+.tile-2 { background: #eee4da; }
+.tile-4 { background: #ede0c8; }
+.tile-8 { background: #f2b179; color: #f9f6f2; }
+.tile-16 { background: #f59563; color: #f9f6f2; }
+.tile-32 { background: #f67c5f; color: #f9f6f2; }
+.tile-64 { background: #f65e3b; color: #f9f6f2; }
+.tile-128 { background: #edcf72; color: #f9f6f2; font-size: 45px; }
+.tile-256 { background: #edcc61; color: #f9f6f2; font-size: 45px; }
+.tile-512 { background: #edc850; color: #f9f6f2; font-size: 45px; }
+.tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 35px; }
+.tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 35px; }
+
+.game-message {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(238, 228, 218, 0.73);
+    z-index: 100;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-message.game-over {
+    display: flex;
+}
+
+.game-message p {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.lower {
+    margin-top: 30px;
+}
+
+.restart-button {
+    display: inline-block;
+    background: #8f7a66;
+    border-radius: 3px;
+    padding: 0 20px;
+    color: white;
+    height: 40px;
+    line-height: 42px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.heading:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.instructions {
+    margin-top: 20px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.instructions .restart-button {
+    margin-top: 15px;
+}
+
+@media screen and (max-width: 520px) {
+    .container {
+        width: 280px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        font-size: 40px;
+    }
+    
+    .grid-container {
+        width: 250px;
+        height: 250px;
+        padding: 10px;
+    }
+    
+    .grid-cell {
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .tile {
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        font-size: 25px;
+    }
+    
+    .tile-128, .tile-256, .tile-512 {
+        font-size: 20px;
+    }
+    
+    .tile-1024, .tile-2048 {
+        font-size: 15px;
+    }
+    
+    .score-container, .best-score-container {
+        padding: 10px 15px;
+        font-size: 18px;
+        height: 20px;
+        line-height: 22px;
+    }
+    
+    .best-score-container {
+        margin-right: 5px;
+    }
+}
+
+/* 新增的動畫效果 */
+@keyframes appear {
+    0% { opacity: 0; transform: scale(0); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.tile-new {
+    animation: appear 0.2s ease-in-out;
+}
+
+@keyframes pop {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.tile-merged {
+    animation: pop 0.2s ease-in-out;
+}
+
+/* 保持網格背景顯示 */
+.grid-row:after {
+    content: "";
+    display: block;
+    clear: both;
+}
