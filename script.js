@@ -252,379 +252,211 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
     
-    // 合併方塊並計算分數
-    function mergeTiles(row) {
-        let result = [];
-        let merged = false;
-        let scoreAdded = 0;
-        
-        // 移除所有零
-        let filtered = [];
-        for (let i = 0; i < row.length; i++) {
-            if (row[i] !== 0) {
-                // 處理可能是對象的情況
-                const value = typeof row[i] === 'object' ? row[i].value : row[i];
-                filtered.push(value);
-            }
-        }
-        
-        // 合併相同數值的方塊
-        for (let i = 0; i < filtered.length; i++) {
-            if (i < filtered.length - 1 && filtered[i] === filtered[i+1]) {
-                const mergedValue = filtered[i] * 2;
-                // 標記為已合併，以便添加動畫
-                result.push({
-                    value: mergedValue,
-                    isMerged: true
-                });
-                scoreAdded += mergedValue;
-                i++;
-                merged = true;
-            } else {
-                result.push(filtered[i]);
-            }
-        }
-        
-        // 補充零
-        while (result.length < gridSize) {
-            result.push(0);
-        }
-        
-        return { row: result, merged, scoreAdded };
+    // 處理勝利
+    function handleWin() {
+        gameOver = true;
+        updateBestScore();
     }
     
-    // 處理移動
-    function handleMove(direction) {
-        if (gameOver) return false;
-        
-        // 保存移動前的網格狀態
-        previousGrid = copyGrid(grid);
+    // 處理方向鍵事件
+    document.addEventListener('keydown', (event) => {
+        if (gameOver) return;
         
         let moved = false;
+        previousGrid = copyGrid(grid);
         
-        switch(direction) {
-            case 'up':
-                moved = moveUp();
-                break;
-            case 'down':
-                moved = moveDown();
-                break;
-            case 'left':
+        switch(event.key) {
+            case 'ArrowLeft':
                 moved = moveLeft();
                 break;
-            case 'right':
+            case 'ArrowRight':
                 moved = moveRight();
+                break;
+            case 'ArrowUp':
+                moved = moveUp();
+                break;
+            case 'ArrowDown':
+                moved = moveDown();
                 break;
         }
         
         if (moved) {
-            // 處理方塊的移動軌跡，添加移動信息
-            trackTileMovements();
+            addRandomTile();
+            updateView();
             
-            // 更新最高分
-            if (score > bestScore) {
-                updateBestScore();
+            if (checkWin()) {
+                handleWin();
+            } else if (checkGameOver()) {
+                handleGameOver();
             }
-            
-            // 將更新放在 setTimeout 中，以便動畫可以完成
-            setTimeout(() => {
-                addRandomTile();
-                updateView();
-                
-                if (checkWin()) {
-                    return;
-                }
-                
-                if (checkGameOver()) {
-                    handleGameOver();
-                }
-            }, 150);
-            
-            return true;
+        }
+    });
+    
+    // 處理觸控事件
+    let touchStartX = 0;
+    let touchStartY = 0;
+    
+    gridContainer.addEventListener('touchstart', (event) => {
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+    });
+    
+    gridContainer.addEventListener('touchend', (event) => {
+        if (gameOver) return;
+        
+        const touchEndX = event.changedTouches[0].clientX;
+        const touchEndY = event.changedTouches[0].clientY;
+        
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        
+        let moved = false;
+        previousGrid = copyGrid(grid);
+        
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (deltaX > 0) {
+                moved = moveRight();
+            } else {
+                moved = moveLeft();
+            }
+        } else {
+            if (deltaY > 0) {
+                moved = moveDown();
+            } else {
+                moved = moveUp();
+            }
         }
         
-        return false;
-    }
-    
-    // 跟蹤方塊移動
-    function trackTileMovements() {
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j < gridSize; j++) {
-                if (grid[i][j] !== 0) {
-                    // 找尋這個方塊在之前網格中的位置
-                    const value = typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j];
-                    let found = false;
-                    
-                    // 不是新生成的方塊
-                    if (!grid[i][j].isNew) {
-                        // 搜尋前一個網格中這個值的位置
-                        for (let prevI = 0; prevI < gridSize && !found; prevI++) {
-                            for (let prevJ = 0; prevJ < gridSize && !found; prevJ++) {
-                                const prevValue = typeof previousGrid[prevI][prevJ] === 'object' ? 
-                                    previousGrid[prevI][prevJ].value : previousGrid[prevI][prevJ];
-                                
-                                // 找到相同值且位置不同的方塊（移動過的方塊）
-                                if (prevValue === value && (prevI !== i || prevJ !== j)) {
-                                    // 如果當前位置是對象，保留其屬性
-                                    if (typeof grid[i][j] === 'object') {
-                                        grid[i][j].fromRow = prevI;
-                                        grid[i][j].fromCol = prevJ;
-                                    } else {
-                                        grid[i][j] = {
-                                            value: value,
-                                            fromRow: prevI,
-                                            fromCol: prevJ
-                                        };
-                                    }
-                                    found = true;
-                                }
-                            }
-                        }
-                    }
-                }
+        if (moved) {
+            addRandomTile();
+            updateView();
+            
+            if (checkWin()) {
+                handleWin();
+            } else if (checkGameOver()) {
+                handleGameOver();
             }
         }
-    }
+    });
+    
+    // 防止觸控事件的預設行為
+    gridContainer.addEventListener('touchmove', (event) => {
+        event.preventDefault();
+    });
+    
+    // 重新開始按鈕事件
+    restartButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            initGame();
+        });
+    });
     
     // 向左移動
     function moveLeft() {
         let moved = false;
-        let scoreAdded = 0;
-        
         for (let i = 0; i < gridSize; i++) {
-            const oldRow = [...grid[i]];
-            const { row, merged, scoreAdded: rowScore } = mergeTiles(oldRow);
-            grid[i] = row;
-            
-            // 判斷是否有移動
-            for (let j = 0; j < gridSize; j++) {
-                if ((typeof oldRow[j] === 'object' ? oldRow[j].value : oldRow[j]) !== 
-                    (typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j])) {
+            const row = grid[i].filter(cell => cell !== 0);
+            for (let j = 0; j < row.length - 1; j++) {
+                if (row[j] === row[j + 1]) {
+                    row[j] *= 2;
+                    score += row[j];
+                    scoreDisplay.textContent = score;
+                    row.splice(j + 1, 1);
                     moved = true;
                 }
             }
-            
-            scoreAdded += rowScore;
+            const newRow = row.concat(Array(gridSize - row.length).fill(0));
+            if (JSON.stringify(grid[i]) !== JSON.stringify(newRow)) {
+                moved = true;
+            }
+            grid[i] = newRow;
         }
-        
-        // 更新分數
-        if (scoreAdded > 0) {
-            score += scoreAdded;
-            scoreDisplay.textContent = score;
-        }
-        
         return moved;
     }
     
     // 向右移動
     function moveRight() {
         let moved = false;
-        let scoreAdded = 0;
-        
         for (let i = 0; i < gridSize; i++) {
-            const oldRow = [...grid[i]];
-            // 反轉，然後合併，再反轉回來
-            const reversed = oldRow.reverse();
-            const { row, merged, scoreAdded: rowScore } = mergeTiles(reversed);
-            grid[i] = row.reverse();
-            
-            // 判斷是否有移動
-            for (let j = 0; j < gridSize; j++) {
-                if ((typeof oldRow[j] === 'object' ? oldRow[j].value : oldRow[j]) !== 
-                    (typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j])) {
+            const row = grid[i].filter(cell => cell !== 0);
+            for (let j = row.length - 1; j > 0; j--) {
+                if (row[j] === row[j - 1]) {
+                    row[j] *= 2;
+                    score += row[j];
+                    scoreDisplay.textContent = score;
+                    row.splice(j - 1, 1);
                     moved = true;
                 }
             }
-            
-            scoreAdded += rowScore;
+            const newRow = Array(gridSize - row.length).fill(0).concat(row);
+            if (JSON.stringify(grid[i]) !== JSON.stringify(newRow)) {
+                moved = true;
+            }
+            grid[i] = newRow;
         }
-        
-        // 更新分數
-        if (scoreAdded > 0) {
-            score += scoreAdded;
-            scoreDisplay.textContent = score;
-        }
-        
         return moved;
     }
     
     // 向上移動
     function moveUp() {
         let moved = false;
-        let scoreAdded = 0;
-        
         for (let j = 0; j < gridSize; j++) {
-            // 獲取列
-            let column = [];
+            const column = [];
             for (let i = 0; i < gridSize; i++) {
-                column.push(grid[i][j]);
+                if (grid[i][j] !== 0) {
+                    column.push(grid[i][j]);
+                }
             }
-            
-            const oldColumn = [...column];
-            const { row: newColumn, merged, scoreAdded: colScore } = mergeTiles(column);
-            
-            // 更新網格
-            for (let i = 0; i < gridSize; i++) {
-                grid[i][j] = newColumn[i];
-                if ((typeof oldColumn[i] === 'object' ? oldColumn[i].value : oldColumn[i]) !== 
-                    (typeof newColumn[i] === 'object' ? newColumn[i].value : newColumn[i])) {
+            for (let i = 0; i < column.length - 1; i++) {
+                if (column[i] === column[i + 1]) {
+                    column[i] *= 2;
+                    score += column[i];
+                    scoreDisplay.textContent = score;
+                    column.splice(i + 1, 1);
                     moved = true;
                 }
             }
-            
-            scoreAdded += colScore;
+            const newColumn = column.concat(Array(gridSize - column.length).fill(0));
+            for (let i = 0; i < gridSize; i++) {
+                if (grid[i][j] !== newColumn[i]) {
+                    moved = true;
+                }
+                grid[i][j] = newColumn[i];
+            }
         }
-        
-        // 更新分數
-        if (scoreAdded > 0) {
-            score += scoreAdded;
-            scoreDisplay.textContent = score;
-        }
-        
         return moved;
     }
     
     // 向下移動
     function moveDown() {
         let moved = false;
-        let scoreAdded = 0;
-        
         for (let j = 0; j < gridSize; j++) {
-            // 獲取列
-            let column = [];
+            const column = [];
             for (let i = 0; i < gridSize; i++) {
-                column.push(grid[i][j]);
+                if (grid[i][j] !== 0) {
+                    column.push(grid[i][j]);
+                }
             }
-            
-            const oldColumn = [...column];
-            // 反轉，然後合併，再反轉回來
-            const reversed = column.reverse();
-            const { row: newColumn, merged, scoreAdded: colScore } = mergeTiles(reversed);
-            const result = newColumn.reverse();
-            
-            // 更新網格
-            for (let i = 0; i < gridSize; i++) {
-                grid[i][j] = result[i];
-                if ((typeof oldColumn[i] === 'object' ? oldColumn[i].value : oldColumn[i]) !== 
-                    (typeof result[i] === 'object' ? result[i].value : result[i])) {
+            for (let i = column.length - 1; i > 0; i--) {
+                if (column[i] === column[i - 1]) {
+                    column[i] *= 2;
+                    score += column[i];
+                    scoreDisplay.textContent = score;
+                    column.splice(i - 1, 1);
                     moved = true;
                 }
             }
-            
-            scoreAdded += colScore;
+            const newColumn = Array(gridSize - column.length).fill(0).concat(column);
+            for (let i = 0; i < gridSize; i++) {
+                if (grid[i][j] !== newColumn[i]) {
+                    moved = true;
+                }
+                grid[i][j] = newColumn[i];
+            }
         }
-        
-        // 更新分數
-        if (scoreAdded > 0) {
-            score += scoreAdded;
-            scoreDisplay.textContent = score;
-        }
-        
         return moved;
     }
     
-    // 鍵盤控制
-    document.addEventListener('keydown', function(event) {
-        if (gameOver) return;
-        
-        switch(event.key) {
-            case 'ArrowUp':
-                handleMove('up');
-                break;
-            case 'ArrowDown':
-                handleMove('down');
-                break;
-            case 'ArrowLeft':
-                handleMove('left');
-                break;
-            case 'ArrowRight':
-                handleMove('right');
-                break;
-            default:
-                return; // 忽略其他鍵
-        }
-        
-        event.preventDefault();
-    });
-    
-    // 滑鼠和觸控控制 - 改進版
-    let startX = 0;
-    let startY = 0;
-    let isDragging = false;
-    
-    // 處理滑鼠按下事件
-    gridContainer.addEventListener('mousedown', function(event) {
-        if (gameOver) return;
-        startX = event.clientX;
-        startY = event.clientY;
-        isDragging = true;
-        event.preventDefault();
-    });
-    
-    // 處理滑鼠放開事件
-    document.addEventListener('mouseup', function(event) {
-        if (!isDragging) return;
-        handleSwipe(event.clientX, event.clientY);
-        isDragging = false;
-    });
-    
-    // 處理滑鼠離開事件
-    gridContainer.addEventListener('mouseleave', function(event) {
-        if (!isDragging) return;
-        handleSwipe(event.clientX, event.clientY);
-        isDragging = false;
-    });
-    
-    // 觸控開始事件
-    gridContainer.addEventListener('touchstart', function(event) {
-        if (gameOver) return;
-        startX = event.touches[0].clientX;
-        startY = event.touches[0].clientY;
-        event.preventDefault();
-    }, { passive: false });
-    
-    // 觸控結束事件
-    gridContainer.addEventListener('touchend', function(event) {
-        if (gameOver) return;
-        handleSwipe(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
-        event.preventDefault();
-    }, { passive: false });
-    
-    // 通用處理滑動函數
-    function handleSwipe(endX, endY) {
-        const diffX = endX - startX;
-        const diffY = endY - startY;
-        
-        // 滑動必須超過最小距離
-        const minSwipeDistance = 30;
-        
-        // 判定滑動方向
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            // 水平滑動
-            if (Math.abs(diffX) > minSwipeDistance) {
-                if (diffX > 0) {
-                    handleMove('right');
-                } else {
-                    handleMove('left');
-                }
-            }
-        } else {
-            // 垂直滑動
-            if (Math.abs(diffY) > minSwipeDistance) {
-                if (diffY > 0) {
-                    handleMove('down');
-                } else {
-                    handleMove('up');
-                }
-            }
-        }
-    }
-    
-    // 重新開始按鈕
-    restartButtons.forEach(button => {
-        button.addEventListener('click', initGame);
-    });
-    
-    // 開始遊戲
+    // 初始化遊戲
     initGame();
 });
