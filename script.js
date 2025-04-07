@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameMessage = document.querySelector('.game-message');
     const restartButton = document.querySelector('.restart-button');
 
+    // 確保所有DOM元素都存在
+    if (!gridContainer || !scoreDisplay || !bestScoreDisplay || !gameMessage || !restartButton) {
+        console.error('找不到必要的DOM元素');
+        return;
+    }
+
     // 滑鼠和觸控事件共用變量
     let touchStartX = 0;
     let touchStartY = 0;
@@ -118,7 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: false });
 
     // 重新開始按鈕
-    restartButton.addEventListener('click', () => {
+    restartButton.addEventListener('click', function(event) {
+        console.log('重新開始按鈕被點擊'); // 添加調試日誌
+        event.preventDefault(); // 防止預設行為
+        
         // 重置遊戲狀態
         gameOver = false;
         score = 0;
