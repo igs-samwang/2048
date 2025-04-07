@@ -156,16 +156,33 @@ document.addEventListener('DOMContentLoaded', () => {
         gameMessage.classList.remove('game-over');
         gameMessage.classList.remove('game-won');
         
-        // 清除所有現有的方塊
-        const tiles = document.querySelectorAll('.tile');
-        tiles.forEach(tile => tile.remove());
+        // 清空網格容器
+        gridContainer.innerHTML = '';
         
-        // 初始化網格
-        grid = Array(5).fill().map(() => Array(5).fill(0));
+        // 創建網格單元格
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                gridContainer.appendChild(cell);
+            }
+        }
+        
+        // 初始化網格數據
+        grid = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
         
         // 添加兩個初始方塊
         addRandomTile();
         addRandomTile();
+        
+        // 更新視圖
+        updateView();
+    }
+
+    // 更新分數
+    function updateScore() {
+        scoreDisplay.textContent = score;
+        bestScoreDisplay.textContent = bestScore;
     }
 
     // 添加隨機方塊
@@ -275,20 +292,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function moveLeft() {
         let moved = false;
         for (let i = 0; i < gridSize; i++) {
-            const row = grid[i].filter(cell => cell !== 0);
+            const row = grid[i].filter(cell => {
+                return cell !== 0 && (typeof cell === 'number' || typeof cell.value === 'number');
+            });
+            
             for (let j = 0; j < row.length - 1; j++) {
-                if (row[j] === row[j + 1]) {
+                const current = typeof row[j] === 'object' ? row[j].value : row[j];
+                const next = typeof row[j + 1] === 'object' ? row[j + 1].value : row[j + 1];
+                
+                if (current === next) {
                     row[j] = {
-                        value: row[j] * 2,
+                        value: current * 2,
                         isMerged: true
                     };
                     score += row[j].value;
-                    scoreDisplay.textContent = score;
+                    updateScore();
                     row.splice(j + 1, 1);
                     moved = true;
                 }
             }
-            const newRow = row.concat(Array(gridSize - row.length).fill(0));
+            
+            const newRow = row.map(cell => {
+                return typeof cell === 'object' ? cell : { value: cell, isMerged: false };
+            });
+            
+            while (newRow.length < gridSize) {
+                newRow.push(0);
+            }
+            
             if (JSON.stringify(grid[i]) !== JSON.stringify(newRow)) {
                 moved = true;
             }
@@ -301,20 +332,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function moveRight() {
         let moved = false;
         for (let i = 0; i < gridSize; i++) {
-            const row = grid[i].filter(cell => cell !== 0);
+            const row = grid[i].filter(cell => {
+                return cell !== 0 && (typeof cell === 'number' || typeof cell.value === 'number');
+            });
+            
             for (let j = row.length - 1; j > 0; j--) {
-                if (row[j] === row[j - 1]) {
+                const current = typeof row[j] === 'object' ? row[j].value : row[j];
+                const prev = typeof row[j - 1] === 'object' ? row[j - 1].value : row[j - 1];
+                
+                if (current === prev) {
                     row[j] = {
-                        value: row[j] * 2,
+                        value: current * 2,
                         isMerged: true
                     };
                     score += row[j].value;
-                    scoreDisplay.textContent = score;
+                    updateScore();
                     row.splice(j - 1, 1);
                     moved = true;
                 }
             }
-            const newRow = Array(gridSize - row.length).fill(0).concat(row);
+            
+            const newRow = row.map(cell => {
+                return typeof cell === 'object' ? cell : { value: cell, isMerged: false };
+            });
+            
+            while (newRow.length < gridSize) {
+                newRow.unshift(0);
+            }
+            
             if (JSON.stringify(grid[i]) !== JSON.stringify(newRow)) {
                 moved = true;
             }
@@ -333,19 +378,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     column.push(grid[i][j]);
                 }
             }
+            
             for (let i = 0; i < column.length - 1; i++) {
-                if (column[i] === column[i + 1]) {
+                const current = typeof column[i] === 'object' ? column[i].value : column[i];
+                const next = typeof column[i + 1] === 'object' ? column[i + 1].value : column[i + 1];
+                
+                if (current === next) {
                     column[i] = {
-                        value: column[i] * 2,
+                        value: current * 2,
                         isMerged: true
                     };
                     score += column[i].value;
-                    scoreDisplay.textContent = score;
+                    updateScore();
                     column.splice(i + 1, 1);
                     moved = true;
                 }
             }
-            const newColumn = column.concat(Array(gridSize - column.length).fill(0));
+            
+            const newColumn = column.map(cell => {
+                return typeof cell === 'object' ? cell : { value: cell, isMerged: false };
+            });
+            
+            while (newColumn.length < gridSize) {
+                newColumn.push(0);
+            }
+            
             for (let i = 0; i < gridSize; i++) {
                 if (grid[i][j] !== newColumn[i]) {
                     moved = true;
@@ -366,19 +423,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     column.push(grid[i][j]);
                 }
             }
+            
             for (let i = column.length - 1; i > 0; i--) {
-                if (column[i] === column[i - 1]) {
+                const current = typeof column[i] === 'object' ? column[i].value : column[i];
+                const prev = typeof column[i - 1] === 'object' ? column[i - 1].value : column[i - 1];
+                
+                if (current === prev) {
                     column[i] = {
-                        value: column[i] * 2,
+                        value: current * 2,
                         isMerged: true
                     };
                     score += column[i].value;
-                    scoreDisplay.textContent = score;
+                    updateScore();
                     column.splice(i - 1, 1);
                     moved = true;
                 }
             }
-            const newColumn = Array(gridSize - column.length).fill(0).concat(column);
+            
+            const newColumn = column.map(cell => {
+                return typeof cell === 'object' ? cell : { value: cell, isMerged: false };
+            });
+            
+            while (newColumn.length < gridSize) {
+                newColumn.unshift(0);
+            }
+            
             for (let i = 0; i < gridSize; i++) {
                 if (grid[i][j] !== newColumn[i]) {
                     moved = true;
@@ -394,7 +463,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 檢查是否有空格子
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
-                if (grid[i][j] === 0) {
+                const value = typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j];
+                if (value === 0) {
                     return false;
                 }
             }
@@ -403,11 +473,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 檢查是否有可以合併的相鄰方塊
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
-                if (j < gridSize - 1 && grid[i][j] === grid[i][j + 1]) {
-                    return false;
+                const current = typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j];
+                
+                // 檢查右側
+                if (j < gridSize - 1) {
+                    const right = typeof grid[i][j + 1] === 'object' ? grid[i][j + 1].value : grid[i][j + 1];
+                    if (current === right) return false;
                 }
-                if (i < gridSize - 1 && grid[i][j] === grid[i + 1][j]) {
-                    return false;
+                
+                // 檢查下方
+                if (i < gridSize - 1) {
+                    const down = typeof grid[i + 1][j] === 'object' ? grid[i + 1][j].value : grid[i + 1][j];
+                    if (current === down) return false;
                 }
             }
         }
