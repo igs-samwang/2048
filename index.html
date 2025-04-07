@@ -2,43 +2,36 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048 遊戲</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2048 5x5</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <div class="heading">
-            <h1 class="title">2048</h1>
-            <div class="best-score-container">
-                <div class="score-title">最高分</div>
-                <span id="best-score">0</span>
-            </div>
-            <div class="score-container">
-                <div class="score-title">分數</div>
-                <span id="score">0</span>
-            </div>
-        </div>
-        
-        <div class="game-container">
-            <div class="game-message">
-                <p></p>
-                <div class="lower">
-                    <a class="restart-button">重新開始</a>
+        <div class="header">
+            <div class="scores-container">
+                <div class="score-box">
+                    <div class="score-label">分數</div>
+                    <div id="score">0</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-label">最高分</div>
+                    <div id="best-score">0</div>
                 </div>
             </div>
-            
-            <div class="grid-container" id="grid-container">
-                <!-- 4x4 網格將由JavaScript動態生成 -->
+        </div>
+
+        <div class="game-container">
+            <div class="grid-container">
+                <!-- 5x5網格將由JavaScript動態生成 -->
             </div>
         </div>
-        
-        <div class="instructions">
-            <p>使用 <strong>方向鍵</strong> 或 <strong>滑動</strong> 來移動方塊。當兩個相同數字的方塊相遇時，它們會合併成一個！</p>
-            <a class="restart-button">重新開始</a>
+
+        <div class="game-message">
+            <p>遊戲結束！</p>
+            <div class="restart-button">重新開始</div>
         </div>
     </div>
-    
     <script src="script.js"></script>
 </body>
 </html>
