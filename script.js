@@ -117,31 +117,46 @@ document.addEventListener('DOMContentLoaded', () => {
         isTouching = false;
     }, { passive: false });
 
+    // 重新開始按鈕
+    restartButton.addEventListener('click', () => {
+        // 重置遊戲狀態
+        gameOver = false;
+        score = 0;
+        updateScore();
+        
+        // 清除遊戲結束訊息
+        gameMessage.classList.remove('game-over');
+        gameMessage.classList.remove('game-won');
+        
+        // 清除所有現有的方塊
+        const tiles = document.querySelectorAll('.tile');
+        tiles.forEach(tile => tile.remove());
+        
+        // 重新初始化遊戲
+        initGame();
+    });
+
     // 初始化遊戲
     function initGame() {
-        grid = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
-        score = 0;
+        // 重置遊戲狀態
         gameOver = false;
-        scoreDisplay.textContent = '0';
-        bestScoreDisplay.textContent = bestScore;
+        score = 0;
+        updateScore();
+        
+        // 清除遊戲結束訊息
         gameMessage.classList.remove('game-over');
+        gameMessage.classList.remove('game-won');
         
-        // 清空網格
-        gridContainer.innerHTML = '';
+        // 清除所有現有的方塊
+        const tiles = document.querySelectorAll('.tile');
+        tiles.forEach(tile => tile.remove());
         
-        // 創建網格
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j < gridSize; j++) {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                gridContainer.appendChild(cell);
-            }
-        }
+        // 初始化網格
+        grid = Array(5).fill().map(() => Array(5).fill(0));
         
-        // 添加初始方塊
+        // 添加兩個初始方塊
         addRandomTile();
         addRandomTile();
-        updateView();
     }
 
     // 添加隨機方塊
@@ -396,9 +411,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gameOver = true;
         gameMessage.classList.add('game-over');
     }
-
-    // 重新開始按鈕
-    restartButton.addEventListener('click', initGame);
 
     // 初始化遊戲
     initGame();
