@@ -61,34 +61,35 @@ body {
 .grid-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-gap: 10px;
-    background: #bbada0;
-    border-radius: 6px;
+    gap: 10px;
     padding: 10px;
+    background-color: #bbada0;
+    border-radius: 6px;
     position: relative;
 }
 
 .grid-cell {
-    background: rgba(238, 228, 218, 0.35);
-    border-radius: 6px;
+    width: 100%;
     padding-bottom: 100%;
-    position: relative;
+    background-color: rgba(238, 228, 218, 0.35);
+    border-radius: 3px;
 }
 
 .tile {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
+    width: calc(20% - 8px);
+    height: calc(20% - 8px);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 35px;
+    font-size: 24px;
     font-weight: bold;
-    background: #eee4da;
-    border-radius: 6px;
-    transition: all 0.15s ease-in-out;
+    border-radius: 3px;
+    transition: transform 0.15s ease-in-out, left 0.15s ease-in-out, top 0.15s ease-in-out;
+    left: calc(var(--x) * (20% + 10px) + 10px);
+    top: calc(var(--y) * (20% + 10px) + 10px);
+    background-color: #eee4da;
+    color: #776e65;
 }
 
 .tile-2 { background: #eee4da; }

@@ -137,12 +137,27 @@ document.addEventListener('DOMContentLoaded', () => {
         gameMessage.classList.remove('game-over');
         gameMessage.classList.remove('game-won');
         
-        // 清除所有現有的方塊
-        const tiles = document.querySelectorAll('.tile');
-        tiles.forEach(tile => tile.remove());
+        // 清空網格容器
+        gridContainer.innerHTML = '';
         
-        // 重新初始化遊戲
-        initGame();
+        // 創建網格單元格
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                gridContainer.appendChild(cell);
+            }
+        }
+        
+        // 初始化網格數據
+        grid = Array(gridSize).fill().map(() => Array(gridSize).fill(0));
+        
+        // 添加兩個初始方塊
+        addRandomTile();
+        addRandomTile();
+        
+        // 更新視圖
+        updateView();
     });
 
     // 初始化遊戲
@@ -210,9 +225,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 更新視圖
     function updateView() {
+        // 先移除所有現有的方塊
         const tiles = document.querySelectorAll('.tile');
         tiles.forEach(tile => tile.remove());
         
+        // 創建新的方塊
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
                 if (grid[i][j] !== 0) {
@@ -220,6 +237,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const tile = document.createElement('div');
                     tile.className = `tile tile-${value}`;
                     tile.textContent = value;
+                    
+                    // 設置方塊位置
+                    tile.style.setProperty('--x', j);
+                    tile.style.setProperty('--y', i);
                     
                     if (typeof grid[i][j] === 'object') {
                         if (grid[i][j].isNew) {
@@ -229,8 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     
-                    const cell = gridContainer.children[i * gridSize + j];
-                    cell.appendChild(tile);
+                    gridContainer.appendChild(tile);
                 }
             }
         }
