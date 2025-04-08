@@ -124,9 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: false });
 
     // 重新開始按鈕
-    restartButton.addEventListener('click', function(event) {
-        console.log('重新開始按鈕被點擊'); // 添加調試日誌
-        event.preventDefault(); // 防止預設行為
+    restartButton.addEventListener('click', function() {
+        console.log('重新開始按鈕被點擊');
         
         // 重置遊戲狀態
         gameOver = false;
@@ -136,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 清除遊戲結束訊息
         gameMessage.classList.remove('game-over');
         gameMessage.classList.remove('game-won');
+        gameMessage.style.display = 'none';
         
         // 清空網格容器
         gridContainer.innerHTML = '';
@@ -205,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const emptyCells = [];
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
-                if (grid[i][j] === 0) {
+                const value = typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j];
+                if (value === 0) {
                     emptyCells.push({row: i, col: j});
                 }
             }
@@ -232,8 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // 創建新的方塊
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
-                if (grid[i][j] !== 0) {
-                    const value = typeof grid[i][j] === 'object' ? grid[i][j].value : grid[i][j];
+                const cell = grid[i][j];
+                if (cell !== 0) {
+                    const value = typeof cell === 'object' ? cell.value : cell;
                     const tile = document.createElement('div');
                     tile.className = `tile tile-${value}`;
                     tile.textContent = value;
@@ -242,10 +244,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     tile.style.setProperty('--x', j);
                     tile.style.setProperty('--y', i);
                     
-                    if (typeof grid[i][j] === 'object') {
-                        if (grid[i][j].isNew) {
+                    if (typeof cell === 'object') {
+                        if (cell.isNew) {
                             tile.classList.add('tile-new');
-                        } else if (grid[i][j].isMerged) {
+                        } else if (cell.isMerged) {
                             tile.classList.add('tile-merged');
                         }
                     }
@@ -254,17 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        
-        // 清除動畫標記
-        setTimeout(() => {
-            for (let i = 0; i < gridSize; i++) {
-                for (let j = 0; j < gridSize; j++) {
-                    if (typeof grid[i][j] === 'object') {
-                        grid[i][j] = grid[i][j].value;
-                    }
-                }
-            }
-        }, 200);
     }
 
     // 移動方塊
@@ -516,6 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleGameOver() {
         gameOver = true;
         gameMessage.classList.add('game-over');
+        gameMessage.style.display = 'block';
     }
 
     // 初始化遊戲
